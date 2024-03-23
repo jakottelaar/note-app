@@ -1,60 +1,35 @@
-<script lang="ts">
+<script setup>
 import axios from "axios";
+import { useStore } from "vuex";
 import NoteCard from "./components/NoteCard.vue";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
-type Note = {
-  id: number;
-  title: string;
-  content: string;
-  date: string;
-};
+const store = useStore();
 
-export default {
-  data() {
-    let title = ref("");
-    let content = ref("");
-    return {
-      notes: [] as Note[],
-      title,
-      content,
-    };
-  },
-  components: {
-    NoteCard,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-  },
-  methods: {
-    async fetchNotes() {
-      const response = await axios.get("http://localhost:8080/note");
-      this.notes = response.data.data;
-    },
-    async createNote() {
-      const response = await axios.post("http://localhost:8080/note", {
-        title: this.title,
-        content: this.content,
-      });
-      console.log(response.data);
-    },
-  },
-  beforeMount() {
-    this.fetchNotes();
-  },
+const title = ref("");
+const content = ref("");
+
+onMounted(async () => {
+  await store.dispatch("fetchNotes");
+});
+
+const createNote = async () => {
+  const newNote = {
+    title: title.value,
+    content: content.value,
+  };
+  await store.dispatch("createNote", newNote);
+  // Clear input fields after creating note
+  title.value = "";
+  content.value = "";
 };
 </script>
 
@@ -80,22 +55,28 @@ export default {
               />
             </div>
             <div class="grid grid-cols-4 items-center gap-4">
-              <input
+              <textarea
                 v-model="content"
-                class="col-span-3 rounded-xl bg-neutral-200 p-2 outline-none"
+                class="col-span-3 h-[200px] resize-none rounded-xl bg-neutral-200 p-2 outline-none"
                 placeholder="Content"
-              />
+              ></textarea>
             </div>
           </div>
           <DialogFooter>
-            <button type="submit" @click="createNote">Save changes</button>
+            <button
+              type="submit"
+              @click="createNote"
+              class="rounded-xl bg-black px-4 py-2 font-semibold text-white duration-300 hover:bg-transparent hover:text-black"
+            >
+              Save changes
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       <h1 class="mb-6 text-2xl font-bold">Notes</h1>
       <div class="grid grid-cols-4 gap-6">
-        <div v-for="note in notes" :key="note.id">
-          <NoteCard :-note="note" />
+        <div v-for="note in $store.state.notes" :key="note.id">
+          <NoteCard :note="note" />
         </div>
       </div>
     </div>

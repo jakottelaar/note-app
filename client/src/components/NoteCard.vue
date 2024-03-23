@@ -1,38 +1,18 @@
-<script lang="ts">
-import axios from "axios";
+<script setup>
+import { defineProps, computed } from "vue";
+import { useStore } from "vuex";
 
-export default {
-  props: {
-    Note: {
-      type: Object,
-      required: true,
-    },
-  },
-  computed: {
-    formattedDate() {
-      const date = new Date(this.Note.created_at);
+const store = useStore();
 
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-    },
-  },
-  methods: {
-    handleEdit() {
-      console.log("Edit");
-    },
-    async handleDelete() {
-      const confirmDelete = confirm(
-        "Are you sure you want to delete this note?",
-      );
+const props = defineProps(["note"]);
 
-      if (confirmDelete) {
-        await axios.delete(`http://localhost:8080/note/${this.Note.id}`);
-      }
-    },
-  },
+const formattedDate = computed(() => {
+  const date = new Date(props.note.createdAt);
+  return date.toLocaleDateString();
+});
+
+const handleDelete = async () => {
+  await store.dispatch("deleteNote", props.note.id);
 };
 </script>
 
@@ -41,11 +21,11 @@ export default {
     class="flex h-[250px] w-[225px] flex-col justify-between rounded-xl bg-white p-4 shadow-lg"
   >
     <div>
-      <h1 class="text-xl font-bold">{{ Note.title }}</h1>
-      <p class="text-clip">{{ Note.content }}</p>
+      <h1 class="text-xl font-bold">{{ props.note.title }}</h1>
+      <p class="text-clip">{{ props.note.content }}</p>
     </div>
     <div class="flex flex-row justify-between">
-      <p class="w-fit text-sm text-neutral-500">{{ formattedDate }}</p>
+      <p class="w-fit text-sm text-neutral-500"></p>
       <div class="flex flex-row space-x-2">
         <button @click="handleEdit">
           <svg

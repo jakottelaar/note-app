@@ -37,3 +37,4 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - name: Install dependencies
         run: pnpm install
+        working-directory: ./server
